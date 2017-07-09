@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Dress Up</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" type="text/css" href="style/style.css">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+		<script src="js/three.js"></script>
+		<script src="js/UCSCharacter.js"></script>
+		<script src="js/Detector.js"></script>
+		<script src='js/dat.gui.min.js'></script>
+		<script src="js/OrbitControls.js"></script>
+	</head>
+
+	<body>
+	<div class="fitness_info hide"></div>
+	<section class="content sidebar">
+		<div class="dress_list">
+			<ul>
+				<li class="dress_item" data_object_url="dress"><img src="templates/models/test.jpg" /> <input type="checkbox" class="checkbox" id="dress" />
+				<span class="sizes">
+					<input type="radio" name="gender" value="s" checked> S 
+					<input type="radio" name="gender" value="m"> M
+					<input type="radio" name="gender" value="l"> L  
+				</span></li>
+				<li class="dress_item" data_object_url="skirt"><img src="templates/models/Skirt.png" /> <input type="checkbox" class="checkbox" id="skirt" />
+				<span class="sizes">
+					<input type="radio" name="gender" value="s" checked> S 
+					<input type="radio" name="gender" value="m"> M
+					<input type="radio" name="gender" value="l"> L
+				</span></li>
+				<li class="dress_item" data_object_url="top"><img src="templates/models/shirt.jpg" /> <input type="checkbox" class="checkbox" id="top" />
+				<span class="sizes">
+					<input type="radio" name="gender" value="s" checked> S 
+					<input type="radio" name="gender" value="m"> M
+					<input type="radio" name="gender" value="l"> L
+				</span></li>
+			</ul>
+		</div>
+		<button class="try_it">Try it</button>
+	</section>
+	<section class="content main">
+		<div class="size_form">Fat:<br><input type="text" id="fat"><br>Bust:<br>
+		<input type="text" id="bust"><br>Hip:<br><input type="text" id="hip"><br>
+		</div>
+		<div id="container">
+		</div>
+	</section>
+
+		
+
+		<script>
+			// var SCREEN_WIDTH = $("#container").innerWidth();
+			var SIZECHART ={
+				"s" : [34, 32, 28],
+				"m" : [36, 34, 30],
+				"l" : [38, 36, 32]
+			}
+			var SCREEN_WIDTH = window.innerWidth;
+			var SCREEN_HEIGHT = window.innerHeight;
+			var container;
+			var camera, scene;
+			var renderer;
+			var mesh;
+			var mouseX = 0, mouseY = 0;
+			// var windowHalfX = $("#container").innerWidth() / 2;
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+			var clock = new THREE.Clock();
+			var gui, skinConfig, morphConfig;
+			
+			function init(args) {
+				console.log(args);
+				container = document.getElementById( 'container' );
+				camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 100000 );
+				camera.position.set( 200, 4000, 5000 );
+				scene = new THREE.Scene();
+				// LIGHTS
+				var light = new THREE.DirectionalLight( 0xffffff, 1 );
+				light.position.set( 0, 140, 500 );
+				light.position.multiplyScalar( 1.1 );
+				light.color.setHSL( 0.6, 0.075, 1 );
+				scene.add( light );
+				//
+				var light = new THREE.DirectionalLight( 0xffffff, 1 );
+				// light.position.set( 0, - 1, 0 );
+				scene.add( light );
+
+				// scene.add(camera);
+				// RENDERER
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setClearColor( 0xffffff );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( SCREEN_WIDTH, SCREEN_HEIGHT );
+				container.appendChild( renderer.domElement );
+				// CHARACTER
+				character = new THREE.UCSCharacter();
+				character.onLoadComplete = function () {
+					console.log( "Load Complete" );
+					console.log( character.numSkins + " skins and " + character.numMorphs + " morphtargets loaded." );
+					gui = new dat.GUI();
+					if(!args){
+						setupSkinsGUI();
+						setupMorphsGUI()
+						gui.width = 200;
+						gui.open();
+					}
+					
+				};
+				var loader = new THREE.FileLoader();
+				loader.load( 'templates/UCS_config.json', function ( text ) {
+					var config = JSON.parse( text );
+					character.loadParts( config );
+					scene.add( character.root );
+					scene.updateMatrixWorld(true);
+				} );
+
+				var objectLoader = new THREE.ObjectLoader();
+				var jsonLoader = new THREE.JSONLoader();
+
+				if (args != null && args.length > 0){
+					args.forEach(function (item, index){
+						// var fat = parseInt(document.getElementById("fat").value);
+						// var bust = parseInt(document.getElementById("bust").value);
+						// var hip = parseInt(document.getElementById("hip").value);
+						// var flag = 0;
+						// console.log(item)
+						// if (fat > SIZECHART[item[1]][0] || bust > SIZECHART[item[1]][1] || hip > SIZECHART[item[1]][2]) {
+						// 	jQuery(".fitness_info").text("This dress might not fit you! Please try the next size");
+      //       				jQuery(".fitness_info").show();
+      //       				flag = 1;
+						// } else {
+						// 	morphConfig = {};
+						// 	morphConfig["Fat"] = fat;
+						// 	morphConfig["Bust"] = bust + 150;
+						// 	morphConfig["Hip"] = hip;
+						// 	character.updateMorphs(morphConfig);
+						// }
+						// if (flag == 0){
+							if (item[0] == "dress"){
+								objectLoader.load("templates/dress_1/dress-uv-test.json", function(obj){
+									var position = new THREE.Vector3();
+									position.setFromMatrixPosition(character.root.matrixWorld);
+									obj.position.set(position.x, position.y, position.z);
+									obj.scale.set(95, 77, 130);
+									// obj.scale.set(98, 77, 55);
+									// if (item[1] == "m"){
+									// 	obj.scale.set(96, 78, 131);
+									// } else if (item[1] == "l"){
+									// 	obj.scale.set(97, 79, 132);
+									// }
+									obj.rotation.y += Math.PI ;
+									scene.add(obj);
+									// }
+								});
+							} else if (item[0] == "skirt"){
+								jsonLoader.load("templates/skirt/skirt1.json", function(geometry, materials){
+								 	var obj2 = new THREE.Mesh(geometry, materials[0]);
+							 		obj2.scale.set(15, 20, 15);
+							 	// 	if (item[1] == "m"){
+									// 	obj.scale.set(21, 21, 19);
+									// } else if (item[1] == "l"){
+									// 	obj.scale.set(22, 22, 20);
+									// }
+									obj2.position.set(-4, 59, 5);
+									character.root.add(obj2);
+								});
+							} else {
+								jsonLoader.load("templates/shirt/shirt.json", function(geometry, materials){
+									var obj3 = new THREE.Mesh(geometry, materials[0]);
+									obj3.scale.set(340, 380, 140);
+									// if (item[1] == "m"){
+									// 	obj.scale.set(361, 381, 201);
+									// } else if (item[1] == "l"){
+									// 	obj.scale.set(362, 382, 202);
+									// }
+									obj3.position.set(20, 2780,-40);
+									scene.add(obj3);
+								});
+							}
+
+						// }
+						
+					});
+				}
+				// morphConfig = {"Fat": 34, "Bust": 132, "Hip": 28}
+				// character.updateMorphs(morphConfig)
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls.enableZoom = false;
+				controls.target.set( 0, 3000, 0 );
+				controls.addEventListener( 'change', render );
+			}
+			function setupSkinsGUI() {
+				skinConfig = {
+					wireframe: false
+				};
+				var skinCallback = function ( index ) {
+					return function () {
+						character.setSkin( index );
+					};
+				};
+				var name = character.skins[0].name;
+				skinConfig[name] = skinCallback(0);
+			}
+
+			function setupMorphsGUI() {
+				var morphGui = gui.addFolder( "Morphs" );
+				morphConfig = {
+				};
+				var morphCallback = function( index ) {
+					return function () {
+						character.updateMorphs( morphConfig );
+					}
+				};
+				for ( var i = 0; i < character.numMorphs; i ++ ) {
+					var morphName = character.morphs[ i ];
+					morphConfig[ morphName ] = 0;
+				}
+				for ( var i = 0; i < character.numMorphs; i ++ ) {
+					if (i != 1 && i != 0){
+						morphGui.add( morphConfig, character.morphs[ i ] ).min( 0 ).max( 100 ).onChange( morphCallback( i ) );
+					} else if (i == 1) {
+						morphGui.add(morphConfig, character.morphs[i]).min(100).max(200).onChange(morphCallback(i));
+					}
+				}
+				morphGui.open();
+			}
+			function animate() {
+				requestAnimationFrame( animate );
+				controls.update();
+				render();
+			}
+			function render() {
+				var delta = 0.75 * clock.getDelta();
+				// update skinning
+				character.mixer.update( delta );
+				renderer.render( scene, camera );
+			}
+			$(document).ready(function(){
+				init();
+				animate();
+			});
+			$('.try_it').click(function(){
+				var args = [];
+				$('.checkbox:checked').each(function(){
+					args.push([$(this).attr("id"), $(this).parent().find('[type="radio"]:checked').val()]);
+					// $('[type="radio"]:checked')
+					// console.log($(this).parent().find('.radio:checked').val());
+				});
+				if(args.length){
+					$("#container").empty();
+					console.log(args);
+					init(args);
+					animate();
+				}
+				
+			});
+			$('.checkbox').click(function(){
+				if(!$(this).parent().find('span:visible').length){
+					$(this).parent().find('span').show();
+				}else{
+					$(this).parent().find('span').hide();
+				}
+					
+			});
+		</script>
+
+	</body>
+</html>

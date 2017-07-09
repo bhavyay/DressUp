@@ -1,0 +1,10 @@
+{
+	"baseUrl":		"templates/female_2/",
+	"character":	"female_2.json",
+	"skins": 		["Caucasion_Female_2.jpg"],
+	"morphs": 		["Fat", "Bust", "Hip", "Age", "Skinniness"],
+	"x":	0,
+	"y":	-500,
+	"z":	-300,
+	"s":	30
+}

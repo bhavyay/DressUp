@@ -1,0 +1,80 @@
+body {
+    font-family: ComicSans;
+    /*background: #000;*/
+    color: #dadada;
+    margin: 0px;
+    overflow: hidden;
+}
+.content{
+	float: left;
+}
+.sidebar{
+	width: 20%;
+    /*background: #000;*/
+    text-align: center;
+}
+.main{
+	width: 80%;
+}
+#container{
+    float: left;
+    width: 100%;
+}
+.dress_list{
+
+}
+.dress_list ul {
+    list-style: none;
+    margin: 0px;
+}
+.dress_item {
+    list-style: none;
+    width: 80%;
+    margin: 20px auto;
+    min-height: 170px;
+    /*background: #000;*/
+    background-size: contain;
+    position: relative;
+    color: #333;
+}
+/*.dg.ac{
+    display: none;
+}*/
+.try_it {
+    text-align: center;
+    color: #5454ea;
+    padding: 5px;
+    font-size: 16px;
+    border-radius: 5px;
+    width: 30%;
+}
+.dress_item img{
+    min-height: 170px;
+    width: 100%;
+}
+.dress_item .checkbox { position: absolute; top: 0px; left: 0px; }
+.dress_item form{
+    min-height: 30px;
+    display: none;
+}
+.fitness_info.hide {
+    color: blue;
+    text-align: center;
+    margin: 10px 0px;
+}
+.hide {
+    display: none;
+}
+.size_form {
+    width: 130px;
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background: #333;
+    color: #dadada;
+    padding: 10px;
+}
+
+
+
+
